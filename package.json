@@ -1,0 +1,16 @@
+{
+  "name": "greencode",
+  "version": "0.1.0",
+  "description": "CLI de logística reversa e rastreabilidade de resíduos eletrônicos (projeto de estudo de POO em TypeScript)",
+  "main": "dist/index.js",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "tsc && node --test dist/testes/jornada.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "typescript": "^6.0.3"
+  }
+}
