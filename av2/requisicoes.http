@@ -1,0 +1,68 @@
+### =========================================================================
+### greencode AV2 — roteiro de requisições para demonstração
+### Use com a extensão "REST Client" do VS Code (clique em "Send Request").
+### Pré-requisitos: npm run db:up && npm run db:migrate && npm run db:seed && npm run dev
+### =========================================================================
+
+@base = http://localhost:3333
+
+### Saúde do servidor e do banco
+GET {{base}}/saude
+
+### --- 1. Login (copie o "token" da resposta para as variáveis abaixo) -----
+# @name loginAlmoxarife
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{ "usuario": "almoxarife", "senha": "Almox@2026" }
+
+###
+# @name loginAuditor
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{ "usuario": "auditor", "senha": "Auditor@2026" }
+
+###
+@tokenGestor = {{loginAlmoxarife.response.body.token}}
+@tokenAuditor = {{loginAuditor.response.body.token}}
+
+### --- 2. Consultas -----------------------------------------------------------
+# @name organizacoes
+GET {{base}}/organizacoes
+Authorization: Bearer {{tokenGestor}}
+
+###
+GET {{base}}/lotes
+Authorization: Bearer {{tokenGestor}}
+
+### Rastreamento pelo código de barras (o seed numera GC-{TIPO}-{ANO}-000001 em diante; veja GET /lotes/:id)
+GET {{base}}/equipamentos/GC-NBK-2026-000014/rastreamento
+Authorization: Bearer {{tokenGestor}}
+
+### --- 3. RBAC: o Auditor lê, mas não escreve (403) ---------------------------
+POST {{base}}/lotes
+Authorization: Bearer {{tokenAuditor}}
+Content-Type: application/json
+
+{ "organizacaoId": "qualquer", "notaFiscal": "NF-X", "transportadora": "X" }
+
+### --- 4. Regra de contrato: Universidade tem contrato vencido sem renovação (422)
+# Troque o organizacaoId pelo id da "Universidade Federal Tecnológica" (veja GET /organizacoes)
+POST {{base}}/lotes
+Authorization: Bearer {{tokenGestor}}
+Content-Type: application/json
+
+{ "organizacaoId": "ID-DA-UNIVERSIDADE", "notaFiscal": "NF-DEMO-1", "transportadora": "TransLog" }
+
+### --- 5. Relatórios (Auditor) ---------------------------------------------------
+GET {{base}}/relatorios/financeiro?inicio=2026-01-01&fim=2026-12-31
+Authorization: Bearer {{tokenAuditor}}
+
+###
+GET {{base}}/relatorios/status/MATERIAL_RECICLAVEL
+Authorization: Bearer {{tokenAuditor}}
+
+###
+GET {{base}}/journal?limite=20
+Authorization: Bearer {{tokenAuditor}}
