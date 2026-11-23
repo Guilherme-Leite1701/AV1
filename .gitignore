@@ -1,0 +1,6 @@
+node_modules/
+dist/
+coverage/
+.env
+*.log
+ARQUITETURA_AV2.md
